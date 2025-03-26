@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | FPL Elite Insights</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home-styles.css">
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body class="dashboard-page">
+    <header>
+        <nav class="main-nav">
+            <div class="logo">
+                <h1>FPL Elite Insights</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/dashboard" class="active">Dashboard</a>
+                <a href="/playeranalytics" id="insights-link" style="display: none;">Elite Insights</a>
+                <a href="/api/auth/logout" id="logout-link">Log Out</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h2>Account Dashboard</h2>
+                <p class="user-welcome">Welcome, <span id="user-email">User</span></p>
+            </div>
+            
+            <div class="dashboard-alert success" id="success-message" style="display: none;"></div>
+            <div class="dashboard-alert error" id="error-message" style="display: none;"></div>
+            
+            <div class="dashboard-cards">
+                <!-- Subscription Status Card -->
+                <div class="dashboard-card subscription-status">
+                    <h3>Subscription Status</h3>
+                    <div id="subscription-active" style="display: none;">
+                        <div class="status-badge active">Active</div>
+                        <p>Your subscription is active until <span id="subscription-end-date">-</span></p>
+                        <p>You have full access to <a href="/playeranalytics">FPL Elite Insights</a>.</p>
+                    </div>
+                    <div id="subscription-inactive" style="display: none;">
+                        <div class="status-badge inactive">Inactive</div>
+                        <p>You currently don't have an active subscription.</p>
+                        <p>Subscribe to gain access to exclusive FPL Elite Insights data.</p>
+                        <button id="subscribe-button" class="dashboard-button primary">Subscribe Now - £4.99/month</button>
+                    </div>
+                </div>
+                
+                <!-- Quick Access Card -->
+                <div class="dashboard-card quick-access">
+                    <h3>Quick Access</h3>
+                    <div class="quick-links">
+                        <a href="/playeranalytics" id="access-insights" class="feature-link" style="display: none;">
+                            <div class="feature-icon">📊</div>
+                            <div class="feature-details">
+                                <h4>Access FPL Elite Insights</h4>
+                                <p>View Top 50 ownership data and analytics</p>
+                            </div>
+                        </a>
+                        <a href="#" class="feature-link disabled" id="access-locked">
+                            <div class="feature-icon">🔒</div>
+                            <div class="feature-details">
+                                <h4>FPL Elite Insights</h4>
+                                <p>Subscribe to unlock this feature</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 FPL Elite Insights. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Initialize Stripe
+        let stripe;
+        
+        // Check URL parameters for success or canceled payment
+        const urlParams = new URLSearchParams(window.location.search);
+        const successParam = urlParams.get('success');
+        const canceledParam = urlParams.get('canceled');
+        const subscriptionParam = urlParams.get('subscription');
+        
+        // Check authentication and load user data
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/user/me');
+                
+                if (!response.ok) {
+                    // Not authenticated, redirect to login
+                    window.location.href = '/login?redirect=/dashboard';
+                    return;
+                }
+                
+                // Parse user data
+                const userData = await response.json();
+                
+                // Update UI with user data
+                document.getElementById('user-email').textContent = userData.user?.email || 'User';
+                
+                // Check subscription status
+                const isSubscribed = userData.isSubscribed;
+                
+                if (isSubscribed) {
+                    document.getElementById('subscription-active').style.display = 'block';
+                    document.getElementById('subscription-inactive').style.display = 'none';
+                    document.getElementById('insights-link').style.display = 'inline-block';
+                    document.getElementById('access-insights').style.display = 'flex';
+                    document.getElementById('access-locked').style.display = 'none';
+                    
+                    // Format and display subscription end date
+                    const endDate = new Date(userData.subscription.current_period_end);
+                    const formattedDate = endDate.toLocaleDateString('en-GB', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                    });
+                    document.getElementById('subscription-end-date').textContent = formattedDate;
+                } else {
+                    document.getElementById('subscription-active').style.display = 'none';
+                    document.getElementById('subscription-inactive').style.display = 'block';
+                    document.getElementById('insights-link').style.display = 'none';
+                    document.getElementById('access-insights').style.display = 'none';
+                    document.getElementById('access-locked').style.display = 'flex';
+                    
+                    // Initialize Stripe
+                    initializeStripe();
+                }
+                
+                // Handle URL parameters
+                if (successParam === 'true') {
+                    showMessage('Payment successful! Your subscription is now active.', 'success');
+                } else if (canceledParam === 'true') {
+                    showMessage('Payment was canceled. Your subscription was not activated.', 'error');
+                } else if (subscriptionParam === 'required') {
+                    showMessage('Subscription required to access FPL Elite Insights.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                showMessage('Error loading account data. Please try again.', 'error');
+            }
+        });
+        
+        // Initialize Stripe and setup the subscription button
+        async function initializeStripe() {
+            try {
+                // Get Stripe publishable key from server
+                const stripeKeyResponse = await fetch('/api/stripe-config');
+                const stripeConfig = await stripeKeyResponse.json();
+                
+                // Initialize Stripe
+                stripe = Stripe(stripeConfig.publishableKey);
+                
+                // Setup subscribe button
+                document.getElementById('subscribe-button').addEventListener('click', async () => {
+                    try {
+                        // Create checkout session
+                        const response = await fetch('/api/subscriptions/create-checkout', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to create checkout session');
+                        }
+                        
+                        const session = await response.json();
+                        
+                        // Redirect to Stripe Checkout
+                        window.location.href = session.url;
+                    } catch (error) {
+                        console.error('Error creating checkout session:', error);
+                        showMessage('Error creating checkout session. Please try again.', 'error');
+                    }
+                });
+            } catch (error) {
+                console.error('Error initializing Stripe:', error);
+                showMessage('Error initializing payment system. Please try again.', 'error');
+            }
+        }
+        
+        // Helper function to show messages
+        function showMessage(message, type) {
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+            
+            if (type === 'success') {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+            } else {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

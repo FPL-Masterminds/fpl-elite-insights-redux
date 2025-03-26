@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPL Elite Insights | Premium Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home-styles.css">
+    <link rel="stylesheet" href="playeranalytics-styles.css">
+</head>
+<body class="insights-page">
+    <header>
+        <nav class="main-nav">
+            <div class="logo">
+                <h1>FPL Elite Insights</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/playeranalytics" class="active">Elite Insights</a>
+                <a href="/api/auth/logout">Log Out</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="container">
+            <div class="insights-header">
+                <h2>FPL ELITE INSIGHTS: TOP 50 MANAGER ANALYSIS</h2>
+                <p class="premium-badge">Premium Content</p>
+            </div>
+            
+            <!-- View Selector -->
+            <div class="tabs">
+                <select id="viewSelector" class="view-selector">
+                    <option value="all-players">All Players</option>
+                    <option value="recommended">Recommended Players</option>
+                    <option value="pitch-view">Pitch View</option>
+                    <option value="differentials">Differentials</option>
+                    <option value="points-team">Points Optimized Team</option>
+                </select>
+            </div>
+
+            <!-- All Players Tab Content -->
+            <div class="tab-content active" id="all-players">
+                <div class="glass-container">
+                    <div class="controls">
+                        <select id="teamCount">
+                            <option value="10">Top 10 Teams</option>
+                            <option value="20">Top 20 Teams</option>
+                            <option value="30">Top 30 Teams</option>
+                            <option value="40">Top 40 Teams</option>
+                            <option value="50">Top 50 Teams</option>
+                        </select>
+                        <button onclick="fetchData()">Fetch Data</button>
+                        <button onclick="downloadCSV()" class="download-btn">Download CSV</button>
+                    </div>
+
+                    <div class="filters">
+                        <select id="positionFilter" onchange="applyFilters()">
+                            <option value="ALL">All Positions</option>
+                            <option value="GKP">Goalkeepers</option>
+                            <option value="DEF">Defenders</option>
+                            <option value="MID">Midfielders</option>
+                            <option value="FWD">Forwards</option>
+                        </select>
+                        <select id="teamFilter" onchange="applyFilters()">
+                            <option value="ALL">All Teams</option>
+                            <!-- Teams will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container glass-container">
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>PHOTO</th>
+                                    <th data-column="position">POSITION</th>
+                                    <th data-column="name">PLAYER</th>
+                                    <th data-column="team">TEAM</th>
+                                    <th data-column="price">PRICE</th>
+                                    <th data-column="ownership">OWNERSHIP</th>
+                                    <th data-column="percentage">OWNERSHIP %</th>
+                                    <th data-column="form">FORM</th>
+                                    <th data-column="transfers_in">TRANSFERS IN</th>
+                                    <th data-column="transfers_out">TRANSFERS OUT</th>
+                                    <th data-column="next_fixture">NEXT FIXTURE</th>
+                                    <th data-column="expected_points">EXPECTED POINTS</th>
+                                    <th data-column="bonus">BONUS POINTS</th>
+                                    <th data-column="total_points">TOTAL POINTS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="playerData">
+                                <!-- Data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Team Tab Content -->
+            <div class="tab-content" id="recommended">
+                <div class="threshold-info glass-container">
+                    Current Threshold: <span id="thresholdDisplay">50%</span>
+                    <div class="threshold-explanation">
+                        Players appearing in this many teams will be recommended
+                    </div>
+                </div>
+                <div class="table-container glass-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>PHOTO</th>
+                                <th>POSITION</th>
+                                <th>PLAYER</th>
+                                <th>TEAM</th>
+                                <th>PRICE</th>
+                                <th>OWNERSHIP %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recommendedPlayers">
+                            <!-- Position headers and empty slots will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pitch View Tab Content -->
+            <div class="tab-content" id="pitch-view">
+                <div class="threshold-info glass-container">
+                    Current Threshold: <span id="thresholdDisplay2">50%</span>
+                    <div class="threshold-explanation">
+                        Players appearing in this many teams will be recommended
+                    </div>
+                </div>
+                <div class="pitch-container glass-container">
+                    <div class="pitch">
+                        <div class="row gk-row">
+                            <!-- Goalkeepers -->
+                            <div id="gk1" class="player-slot gkp"></div>
+                            <div id="gk2" class="player-slot gkp"></div>
+                        </div>
+                        <div class="row def-row">
+                            <!-- Defenders -->
+                            <div id="def1" class="player-slot def"></div>
+                            <div id="def2" class="player-slot def"></div>
+                            <div id="def3" class="player-slot def"></div>
+                            <div id="def4" class="player-slot def"></div>
+                            <div id="def5" class="player-slot def"></div>
+                        </div>
+                        <div class="row mid-row">
+                            <!-- Midfielders -->
+                            <div id="mid1" class="player-slot mid"></div>
+                            <div id="mid2" class="player-slot mid"></div>
+                            <div id="mid3" class="player-slot mid"></div>
+                            <div id="mid4" class="player-slot mid"></div>
+                            <div id="mid5" class="player-slot mid"></div>
+                        </div>
+                        <div class="row fwd-row">
+                            <!-- Forwards -->
+                            <div id="fwd1" class="player-slot fwd"></div>
+                            <div id="fwd2" class="player-slot fwd"></div>
+                            <div id="fwd3" class="player-slot fwd"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Differentials Tab Content -->
+            <div class="tab-content" id="differentials">
+                <div class="glass-container">
+                    <div class="differential-categories">
+                        <div class="category template">
+                            <h3>Template Players (35%+)</h3>
+                            <div id="templatePlayers" class="player-list"></div>
+                        </div>
+                        <div class="category differential">
+                            <h3>Potential Differentials (10-20%)</h3>
+                            <div id="differentialPlayers" class="player-list"></div>
+                        </div>
+                        <div class="category strong-differential">
+                            <h3>Strong Differentials (5-10%)</h3>
+                            <div id="strongDiffPlayers" class="player-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Points Optimized Team Tab Content -->
+            <div class="tab-content" id="points-team">
+                <div class="glass-container">
+                    <div class="team-summary">
+                        <h3>Points Optimized Team (£100m Budget)</h3>
+                        <div class="budget-info">
+                            Total Cost: <span id="totalCost">£0.0m</span>
+                            Total Points: <span id="totalPoints">0</span>
+                        </div>
+                    </div>
+                    <div id="optimizedTeam" class="optimized-team-container">
+                        <!-- Team will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 FPL Elite Insights. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Check if user is authenticated and has an active subscription
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/user/me');
+                
+                if (!response.ok) {
+                    // Not authenticated, redirect to login
+                    window.location.href = '/login?redirect=/playeranalytics';
+                    return;
+                }
+                
+                // Parse user data
+                const userData = await response.json();
+                
+                // Check subscription status
+                const isSubscribed = userData.isSubscribed;
+                
+                if (!isSubscribed) {
+                    // No active subscription, redirect to dashboard
+                    window.location.href = '/dashboard?subscription=required';
+                    return;
+                }
+                
+            } catch (error) {
+                console.error('Error checking authentication:', error);
+                window.location.href = '/login?redirect=/playeranalytics';
+            }
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html> 

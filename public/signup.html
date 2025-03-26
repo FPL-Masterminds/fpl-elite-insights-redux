@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | FPL Elite Insights</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home-styles.css">
+    <link rel="stylesheet" href="auth-styles.css">
+</head>
+<body class="auth-page">
+    <header>
+        <nav class="main-nav">
+            <div class="logo">
+                <h1>FPL Elite Insights</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/signup" class="active">Sign Up</a>
+                <a href="/login">Log In</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Create Your Account</h2>
+                <p>Sign up to get access to exclusive FPL Elite Insights data from the world's top managers.</p>
+                
+                <div class="alert error" id="error-message" style="display: none;"></div>
+                <div class="alert success" id="success-message" style="display: none;"></div>
+                
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" autocomplete="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input-container">
+                            <input type="password" id="password" name="password" autocomplete="new-password" required minlength="6">
+                            <button type="button" class="password-toggle" aria-label="Show password">
+                                <i class="eye-icon">👁️</i>
+                            </button>
+                        </div>
+                        <small>Password must be at least 6 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="password-input-container">
+                            <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" required minlength="6">
+                            <button type="button" class="password-toggle" aria-label="Show password">
+                                <i class="eye-icon">👁️</i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-button">Create Account</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="/login">Log In</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 FPL Elite Insights. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            
+            try {
+                // Clear previous messages
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+                
+                // Validate password match
+                if (password !== confirmPassword) {
+                    errorMessage.textContent = 'Passwords do not match';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                
+                // Send signup request
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Display success message
+                    successMessage.textContent = 'Account created successfully! Redirecting to login...';
+                    successMessage.style.display = 'block';
+                    
+                    // Reset form
+                    document.getElementById('signup-form').reset();
+                    
+                    // Redirect to login after a brief delay
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    // Display error message
+                    errorMessage.textContent = data.error || 'Signup failed. Please try again.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                // Display error message
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                errorMessage.style.display = 'block';
+                console.error('Signup error:', error);
+            }
+        });
+        
+        // Add password toggle functionality
+        document.querySelectorAll('.password-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const passwordField = this.parentElement.querySelector('input');
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    this.setAttribute('aria-label', 'Hide password');
+                } else {
+                    passwordField.type = 'password';
+                    this.setAttribute('aria-label', 'Show password');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

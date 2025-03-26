@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In | FPL Elite Insights</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home-styles.css">
+    <link rel="stylesheet" href="auth-styles.css">
+</head>
+<body class="auth-page">
+    <header>
+        <nav class="main-nav">
+            <div class="logo">
+                <h1>FPL Elite Insights</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/signup">Sign Up</a>
+                <a href="/login" class="active">Log In</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Log In</h2>
+                <p>Welcome back! Log in to access your FPL Elite Insights account.</p>
+                
+                <div class="alert error" id="error-message" style="display: none;"></div>
+                
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" autocomplete="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input-container">
+                            <input type="password" id="password" name="password" autocomplete="current-password" required>
+                            <button type="button" class="password-toggle" aria-label="Show password">
+                                <i class="eye-icon">👁️</i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-button">Log In</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 FPL Elite Insights. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+            
+            try {
+                // Clear previous error messages
+                errorMessage.style.display = 'none';
+                
+                // Send login request
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Check for redirect URL in query params
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirectUrl = urlParams.get('redirect') || '/dashboard';
+                    
+                    // Redirect to dashboard or specified page
+                    window.location.href = redirectUrl;
+                } else {
+                    // Display error message
+                    errorMessage.textContent = data.error || 'Login failed. Please check your credentials.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                // Display error message
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                errorMessage.style.display = 'block';
+                console.error('Login error:', error);
+            }
+        });
+        
+        // Add password toggle functionality
+        document.querySelector('.password-toggle').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                this.setAttribute('aria-label', 'Hide password');
+            } else {
+                passwordField.type = 'password';
+                this.setAttribute('aria-label', 'Show password');
+            }
+        });
+    </script>
+</body>
+</html> 

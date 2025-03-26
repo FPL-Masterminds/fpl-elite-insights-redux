@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | FPL Elite Insights</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home-styles.css">
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body class="admin-page">
+    <header>
+        <nav class="main-nav">
+            <div class="logo">
+                <h1>FPL Elite Insights</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/admin-dashboard" class="active">Admin</a>
+                <a href="/api/auth/logout">Log Out</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="admin-container">
+            <div class="admin-header">
+                <h2>Admin Dashboard</h2>
+                <p class="admin-subtitle">Subscription Management</p>
+            </div>
+            
+            <div class="dashboard-alert success" id="success-message" style="display: none;"></div>
+            <div class="dashboard-alert error" id="error-message" style="display: none;"></div>
+            
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-users">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="active-subscriptions">0</div>
+                    <div class="stat-label">Active Subscriptions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="monthly-revenue">£0</div>
+                    <div class="stat-label">Monthly Revenue</div>
+                </div>
+            </div>
+            
+            <div class="admin-table-container">
+                <h3>Subscription Details</h3>
+                <div class="table-controls">
+                    <input type="text" id="search-input" placeholder="Search by email...">
+                    <select id="status-filter">
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="canceled">Canceled</option>
+                        <option value="past_due">Past Due</option>
+                    </select>
+                </div>
+                <div class="table-responsive">
+                    <table id="subscriptions-table">
+                        <thead>
+                            <tr>
+                                <th>User Email</th>
+                                <th>Subscription Status</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscriptions-data">
+                            <tr>
+                                <td colspan="5">Loading subscription data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 FPL Elite Insights. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Check if user is admin
+                const response = await fetch('/api/admin/check');
+                if (!response.ok) {
+                    // Not admin, redirect to dashboard
+                    window.location.href = '/dashboard';
+                    return;
+                }
+                
+                // Fetch subscription data
+                await fetchSubscriptionData();
+                
+                // Set up search and filter
+                document.getElementById('search-input').addEventListener('input', filterSubscriptions);
+                document.getElementById('status-filter').addEventListener('change', filterSubscriptions);
+                
+            } catch (error) {
+                console.error('Error loading admin dashboard:', error);
+                showMessage('Error loading admin dashboard. Please try again.', 'error');
+            }
+        });
+        
+        async function fetchSubscriptionData() {
+            try {
+                const response = await fetch('/api/admin/subscriptions');
+                if (!response.ok) throw new Error('Failed to fetch subscription data');
+                
+                const data = await response.json();
+                
+                // Update stats
+                document.getElementById('total-users').textContent = data.stats.totalUsers;
+                document.getElementById('active-subscriptions').textContent = data.stats.activeSubscriptions;
+                document.getElementById('monthly-revenue').textContent = `£${data.stats.monthlyRevenue}`;
+                
+                // Render subscription table
+                renderSubscriptionTable(data.subscriptions);
+                
+            } catch (error) {
+                console.error('Error fetching subscription data:', error);
+                showMessage('Error fetching subscription data', 'error');
+            }
+        }
+        
+        function renderSubscriptionTable(subscriptions) {
+            const tableBody = document.getElementById('subscriptions-data');
+            
+            if (!subscriptions || subscriptions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5">No subscription data available</td></tr>';
+                return;
+            }
+            
+            const rows = subscriptions.map(sub => {
+                const startDate = new Date(sub.created_at).toLocaleDateString('en-GB');
+                const endDate = new Date(sub.current_period_end).toLocaleDateString('en-GB');
+                
+                return `
+                    <tr data-email="${sub.user_email.toLowerCase()}" data-status="${sub.status.toLowerCase()}">
+                        <td>${sub.user_email}</td>
+                        <td><span class="status-badge ${sub.status.toLowerCase()}">${sub.status}</span></td>
+                        <td>${startDate}</td>
+                        <td>${endDate}</td>
+                        <td>
+                            <button class="admin-btn" onclick="viewDetails('${sub.id}')">View</button>
+                            ${sub.status === 'active' ? 
+                                `<button class="admin-btn cancel" onclick="cancelSubscription('${sub.id}')">Cancel</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tableBody.innerHTML = rows;
+        }
+        
+        function filterSubscriptions() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value.toLowerCase();
+            
+            const rows = document.querySelectorAll('#subscriptions-data tr');
+            
+            rows.forEach(row => {
+                const email = row.getAttribute('data-email') || '';
+                const status = row.getAttribute('data-status') || '';
+                
+                const matchesSearch = email.includes(searchTerm);
+                const matchesStatus = statusFilter === 'all' || status === statusFilter;
+                
+                row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+            });
+        }
+        
+        async function viewDetails(subscriptionId) {
+            try {
+                const response = await fetch(`/api/admin/subscriptions/${subscriptionId}`);
+                if (!response.ok) throw new Error('Failed to fetch subscription details');
+                
+                const data = await response.json();
+                
+                // Here you would typically show a modal with the details
+                alert(`Subscription Details:\n${JSON.stringify(data, null, 2)}`);
+                
+            } catch (error) {
+                console.error('Error fetching subscription details:', error);
+                showMessage('Error fetching subscription details', 'error');
+            }
+        }
+        
+        async function cancelSubscription(subscriptionId) {
+            if (!confirm('Are you sure you want to cancel this subscription?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/subscriptions/${subscriptionId}/cancel`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) throw new Error('Failed to cancel subscription');
+                
+                showMessage('Subscription canceled successfully', 'success');
+                
+                // Refresh data
+                await fetchSubscriptionData();
+                
+            } catch (error) {
+                console.error('Error canceling subscription:', error);
+                showMessage('Error canceling subscription', 'error');
+            }
+        }
+        
+        function showMessage(message, type) {
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+            
+            if (type === 'success') {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+            } else {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

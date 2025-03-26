@@ -1,0 +1,191 @@
+/* Admin Dashboard Styles */
+
+.admin-page {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+}
+
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.admin-header {
+    margin-bottom: 2rem;
+}
+
+.admin-header h2 {
+    color: var(--primary-color);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.admin-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Admin Stats */
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 1rem;
+}
+
+/* Admin Table */
+.admin-table-container {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.admin-table-container h3 {
+    color: var(--dark-bg);
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.table-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.table-controls input,
+.table-controls select {
+    padding: 0.7rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.table-controls input:focus,
+.table-controls select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+table#subscriptions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+table#subscriptions-table th {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: left;
+    padding: 0.8rem 1rem;
+    font-weight: 600;
+}
+
+table#subscriptions-table td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+table#subscriptions-table tbody tr:hover {
+    background-color: rgba(0, 178, 214, 0.05);
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.canceled {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.past_due {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+/* Action Buttons */
+.admin-btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 0.5rem;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.admin-btn:hover {
+    background-color: #0095b3;
+}
+
+.admin-btn.cancel {
+    background-color: #f44336;
+}
+
+.admin-btn.cancel:hover {
+    background-color: #d32f2f;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 1rem;
+    }
+    
+    .table-controls {
+        flex-direction: column;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+} 

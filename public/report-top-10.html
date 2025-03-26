@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPL Elite Insights - Elite 10 Analysis (Premium)</title>
+    <link rel="stylesheet" href="report-top-10-styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Cover Page -->
+    <div class="page cover-page">
+        <div class="cover-content">
+            <img src="images/logo-primary.svg" alt="FPL Logo" class="fpl-logo">
+            <h1>FPL Elite Insights Premium</h1>
+            <h2>Elite 10 Analysis</h2>
+            <div class="premium-badge">Patreon Exclusive</div>
+            <div class="deadline-info">
+                <span id="deadlineInfo">Loading next deadline...</span>
+            </div>
+            <div class="report-summary">
+                <div class="summary-stat">
+                    <span class="stat-value" id="totalPlayersAnalyzed">0</span>
+                    <span class="stat-label">Players Analyzed</span>
+                </div>
+                <div class="summary-stat">
+                    <span class="stat-value" id="coverTemplateCount">0</span>
+                    <span class="stat-label">Template Players</span>
+                </div>
+                <div class="summary-stat">
+                    <span class="stat-value" id="coverDifferentialCount">0</span>
+                    <span class="stat-label">Key Differentials</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="page toc-page">
+        <h2>Table of Contents</h2>
+        <div class="toc">
+            <a href="#executive-summary" class="toc-item">1. Executive Summary</a>
+            <a href="#template-analysis" class="toc-item">2. Template Players Analysis</a>
+            <a href="#elite-strategy" class="toc-item">3. Elite Strategy Analysis</a>
+            <a href="#differential-analysis" class="toc-item">4. Differential Opportunities</a>
+            <a href="#optimized-team" class="toc-item">5. Points Optimized Selection</a>
+            <a href="#manager-analysis" class="toc-item">6. Current Top 10 Managers</a>
+            <a href="#gameweek-summary" class="toc-item">7. Gameweek Summary</a>
+            <a href="#report-summary" class="toc-item">8. Summary & Disclaimer</a>
+        </div>
+    </div>
+
+    <!-- Executive Summary -->
+    <div class="page" id="executive-summary">
+        <h2>1. Executive Summary</h2>
+        <div class="section-content">
+            <div class="section-intro">
+                <p class="summary-text">
+                    This analysis focuses on the current top 10 ranked FPL managers worldwide, representing the elite 0.0001% of over 10 million players.
+                    The table below categorizes players into two key groups: Template Core (owned by over 50% of these top managers) and Key Differentials (owned by 5-20%).
+                    The 'Count' shows how many players fall into each category, 'Average Points' indicates their scoring performance, and 'Ownership Range' shows the spread of ownership percentages within the top 10.
+                </p>
+                
+                <p>Understanding these metrics helps identify both the essential players driving elite performance and the 
+                differential picks that could give you an edge. High ownership in the Template Core suggests these players 
+                are crucial for maintaining rank, while differentials represent calculated risks the top managers are taking.</p>
+            </div>
+            <div class="summary-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                            <th>Average Points</th>
+                            <th>Ownership Range</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Template Core (>50%)</td>
+                            <td id="summaryTemplateCount"></td>
+                            <td id="templateAvgPoints"></td>
+                            <td id="templateOwnershipRange"></td>
+                        </tr>
+                        <tr>
+                            <td>Key Differentials (5-20%)</td>
+                            <td id="summaryDifferentialCount"></td>
+                            <td id="differentialAvgPoints"></td>
+                            <td id="differentialOwnershipRange"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="keyFindings" class="key-findings">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Analysis -->
+    <div class="page" id="template-analysis">
+        <h2>2. Template Players Analysis</h2>
+        <div class="section-content">
+            <div class="template-players" id="templatePlayersSection">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Elite Strategy Analysis -->
+    <div class="page" id="elite-strategy">
+        <h2>3. Elite Strategy Analysis</h2>
+        <div class="section-intro">
+            <p>This section analyzes key strategic decisions made by the top 10 managers, focusing on four critical aspects 
+            of FPL management. Note that chip usage statistics may show more than 10 managers using certain chips - this is because 
+            managers move in and out of the top 10 throughout the season, so we capture historical chip usage from all managers who 
+            have been in the top 10 at some point. Understanding how these elite managers approach team value, chip usage, captain selection, 
+            and squad structure can provide valuable insights for your own decision-making.</p>
+        </div>
+        <div class="section-content">
+            <div class="strategy-grid">
+                <!-- Price Management -->
+                <div class="strategy-card">
+                    <h3>Price Management</h3>
+                    <div class="strategy-chart" id="priceManagementChart"></div>
+                    <div class="strategy-insights">
+                        <p>Team value and price rise capture analysis:</p>
+                        <ul id="priceInsights"></ul>
+                    </div>
+                </div>
+
+                <!-- Chip Strategy -->
+                <div class="strategy-card">
+                    <h3>Chip Usage Patterns</h3>
+                    <div class="strategy-chart" id="chipStrategyChart"></div>
+                    <div class="strategy-insights">
+                        <p>When and how chips are deployed:</p>
+                        <ul id="chipInsights"></ul>
+                    </div>
+                </div>
+
+                <!-- Captain Analysis -->
+                <div class="strategy-card">
+                    <h3>Captain Choices</h3>
+                    <div class="strategy-insights">
+                        <p>Current captain selections among elite managers:</p>
+                        <ul id="captainInsights"></ul>
+                    </div>
+                </div>
+
+                <!-- Squad Structure -->
+                <div class="strategy-card">
+                    <h3>Squad Structure</h3>
+                    <div class="strategy-insights">
+                        <p>Budget allocation and team structure:</p>
+                        <ul id="squadStructureInsights"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Differential Analysis -->
+    <div class="page" id="differential-analysis">
+        <h2>4. Differential Opportunities</h2>
+        <div class="section-content">
+            <div class="differential-players" id="differentialPlayersSection">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Points Optimized Selection -->
+    <div class="page" id="optimized-team">
+        <h2>5. Points Optimized Selection</h2>
+        <div class="section-content">
+            <div class="optimized-squad" id="optimizedSquadSection">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Individual Manager Analysis -->
+    <div class="page" id="manager-analysis">
+        <h2>6. Current Top 10 Managers</h2>
+        <div class="section-intro">
+            <p>These are the top 10 managers whose team selections were analyzed for this report. 
+            Rankings and points are current as of the last completed gameweek.</p>
+        </div>
+        <div class="section-content">
+            <div class="managers-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Manager</th>
+                            <th>Team Name</th>
+                            <th>Total Points</th>
+                            <th>Last GW</th>
+                        </tr>
+                    </thead>
+                    <tbody id="managerProfilesSection">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gameweek Summary -->
+    <div class="page" id="gameweek-summary">
+        <h2>7. Gameweek Summary</h2>
+        <div class="summary-content" id="gameweekSummaryContent">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Summary & Disclaimer -->
+    <div class="page" id="report-summary">
+        <h2>8. Summary & Disclaimer</h2>
+        <div class="section-content">
+            <div class="summary-section">
+                <h3>Report Summary</h3>
+                <p>This report provides a comprehensive analysis of player selection patterns among the top 10 FPL managers, 
+                highlighting both template players and potential differentials. The insights presented are designed to assist 
+                in your FPL decision-making process while maintaining your own strategic autonomy.</p>
+                <div class="sharing-message">
+                    <h3>Share the Insights</h3>
+                    <p>If you're reading this report through one of our subscribers - that's fantastic! We're thrilled 
+                    our insights are reaching fellow FPL enthusiasts. If you've found value in our analysis, please 
+                    consider supporting our work by visiting <a href="https://fpleliteinsights.com">fpleliteinsights.com</a> 
+                    and joining our Patreon community.</p>
+                    <p>Can't subscribe right now? No problem at all! The best way to support us is by sharing this 
+                    report with other FPL managers who might benefit from these insights. Every share helps our 
+                    community grow stronger.</p>
+                </div>
+            </div>
+            <div class="disclaimer-section">
+                <h3>Important Disclaimers</h3>
+                <ul class="disclaimer-list">
+                    <li><strong>Price Fluctuations:</strong> All player prices shown were correct at the time of analysis. 
+                    Prices can rise or fall during the gameweek based on transfer activity.</li>
+                    
+                    <li><strong>Data Source:</strong> All statistics and figures are sourced directly from the Official Fantasy 
+                    Premier League and are accurate as of our latest analysis.</li>
+                    
+                    <li><strong>Manager Responsibility:</strong> FPL managers are solely responsible for:
+                        <ul>
+                            <li>Verifying all data and statistics</li>
+                            <li>Checking player injuries and availability</li>
+                            <li>Confirming fixture schedules</li>
+                            <li>Making their own transfer decisions</li>
+                        </ul>
+                    </li>
+                    
+                    <li><strong>Liability:</strong> This report is provided for informational purposes only. We accept no 
+                    responsibility or liability for any changes made to your team based on this information.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="report-top-10-script.js"></script>
+</body>
+</html> 

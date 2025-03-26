@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPL Elite Insights | Premier Fantasy Football Analytics</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home-styles.css">
+</head>
+<body class="home-page">
+    <header>
+        <nav class="main-nav">
+            <div class="logo">
+                <h1>FPL Elite Insights</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="active">Home</a>
+                <a href="/signup" id="signup-link">Sign Up</a>
+                <a href="/login" id="login-link">Log In</a>
+                <a href="/dashboard" id="dashboard-link" style="display: none;">Dashboard</a>
+                <a href="/api/auth/logout" id="logout-link" style="display: none;">Log Out</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Gain The Elite Edge in Fantasy Premier League</h2>
+                <p>Access exclusive insights from the top 50 FPL managers in the world</p>
+                <div class="cta-buttons">
+                    <a href="/signup" class="cta-button primary">Get Started</a>
+                    <a href="/login" class="cta-button secondary">Already a member? Log In</a>
+                </div>
+            </div>
+        </section>
+        
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Elite Player Ownership Data</h3>
+                <p>See exactly which players the top 50 managers are selecting</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>Transfer Trends</h3>
+                <p>Identify which players the best managers are buying and selling</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Weekly Insights</h3>
+                <p>Get data-driven analysis to inform your FPL decisions</p>
+            </div>
+        </section>
+        
+        <section class="pricing">
+            <h2>Simple, Transparent Pricing</h2>
+            <div class="price-card">
+                <div class="price">£4.99<span>/month</span></div>
+                <ul class="benefits">
+                    <li>Top 50 manager player ownership data</li>
+                    <li>Transfer trends and insights</li>
+                    <li>Weekly detailed analytics</li>
+                    <li>No long-term commitment</li>
+                </ul>
+                <a href="/signup" class="cta-button primary">Subscribe Now</a>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 FPL Elite Insights. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Check if user is logged in
+        fetch('/api/user/me')
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Not authenticated');
+            })
+            .then(data => {
+                // User is logged in
+                document.getElementById('signup-link').style.display = 'none';
+                document.getElementById('login-link').style.display = 'none';
+                document.getElementById('dashboard-link').style.display = 'inline-block';
+                document.getElementById('logout-link').style.display = 'inline-block';
+            })
+            .catch(error => {
+                // User is not logged in
+                document.getElementById('signup-link').style.display = 'inline-block';
+                document.getElementById('login-link').style.display = 'inline-block';
+                document.getElementById('dashboard-link').style.display = 'none';
+                document.getElementById('logout-link').style.display = 'none';
+            });
+    </script>
+</body>
+</html> 
