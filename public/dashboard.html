@@ -18,7 +18,7 @@
             <div class="nav-links">
                 <a href="/">Home</a>
                 <a href="/dashboard" class="active">Dashboard</a>
-                <a href="/playeranalytics" id="insights-link" style="display: none;">Elite Insights</a>
+                <a href="/playeranalytics" id="insights-link">Elite Insights</a>
                 <a href="/api/auth/logout" id="logout-link">Log Out</a>
             </div>
         </nav>
@@ -41,35 +41,24 @@
                     <div id="subscription-active" style="display: none;">
                         <div class="status-badge active">Active</div>
                         <p>Your subscription is active until <span id="subscription-end-date">-</span></p>
-                        <p>You have full access to <a href="/playeranalytics">FPL Elite Insights</a>.</p>
+                        <a href="/playeranalytics" class="dashboard-button primary">Access Premium Data</a>
                     </div>
                     <div id="subscription-inactive" style="display: none;">
                         <div class="status-badge inactive">Inactive</div>
-                        <p>You currently don't have an active subscription.</p>
-                        <p>Subscribe to gain access to exclusive FPL Elite Insights data.</p>
-                        <button id="subscribe-button" class="dashboard-button primary">Subscribe Now - £4.99/month</button>
+                        <p>Subscribe to access premium FPL Elite Insights data.</p>
+                        <button id="subscribe-button" class="dashboard-button primary">Subscribe - £4.99/month</button>
                     </div>
                 </div>
                 
-                <!-- Quick Access Card -->
-                <div class="dashboard-card quick-access">
-                    <h3>Quick Access</h3>
-                    <div class="quick-links">
-                        <a href="/playeranalytics" id="access-insights" class="feature-link" style="display: none;">
-                            <div class="feature-icon">📊</div>
-                            <div class="feature-details">
-                                <h4>Access FPL Elite Insights</h4>
-                                <p>View Top 50 ownership data and analytics</p>
-                            </div>
-                        </a>
-                        <a href="#" class="feature-link disabled" id="access-locked">
-                            <div class="feature-icon">🔒</div>
-                            <div class="feature-details">
-                                <h4>FPL Elite Insights</h4>
-                                <p>Subscribe to unlock this feature</p>
-                            </div>
-                        </a>
-                    </div>
+                <!-- Information Card -->
+                <div class="dashboard-card info-card">
+                    <h3>What's Included</h3>
+                    <ul class="feature-list">
+                        <li><span class="feature-icon">📊</span> Top 50 FPL Manager Data</li>
+                        <li><span class="feature-icon">🔍</span> Ownership Analysis</li>
+                        <li><span class="feature-icon">📈</span> Transfer Trends</li>
+                        <li><span class="feature-icon">🎯</span> Optimized Team Selections</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -83,11 +72,11 @@
         // Initialize Stripe
         let stripe;
         
-        // Check URL parameters for success or canceled payment
+        // Check URL parameters for subscription success or cancel
         const urlParams = new URLSearchParams(window.location.search);
-        const successParam = urlParams.get('success');
-        const canceledParam = urlParams.get('canceled');
-        const subscriptionParam = urlParams.get('subscription');
+        const subscriptionSuccess = urlParams.get('success') === 'true';
+        const subscriptionCanceled = urlParams.get('canceled') === 'true';
+        const subscriptionRequired = urlParams.get('subscription') === 'required';
         
         // Check authentication and load user data
         document.addEventListener('DOMContentLoaded', async () => {
@@ -112,12 +101,9 @@
                 if (isSubscribed) {
                     document.getElementById('subscription-active').style.display = 'block';
                     document.getElementById('subscription-inactive').style.display = 'none';
-                    document.getElementById('insights-link').style.display = 'inline-block';
-                    document.getElementById('access-insights').style.display = 'flex';
-                    document.getElementById('access-locked').style.display = 'none';
                     
                     // Format and display subscription end date
-                    const endDate = new Date(userData.subscription.current_period_end);
+                    const endDate = new Date(userData.subscription?.current_period_end || (Date.now() + 30*24*60*60*1000));
                     const formattedDate = endDate.toLocaleDateString('en-GB', { 
                         day: 'numeric', 
                         month: 'long', 
@@ -128,19 +114,17 @@
                     document.getElementById('subscription-active').style.display = 'none';
                     document.getElementById('subscription-inactive').style.display = 'block';
                     document.getElementById('insights-link').style.display = 'none';
-                    document.getElementById('access-insights').style.display = 'none';
-                    document.getElementById('access-locked').style.display = 'flex';
                     
                     // Initialize Stripe
                     initializeStripe();
                 }
                 
                 // Handle URL parameters
-                if (successParam === 'true') {
+                if (subscriptionSuccess) {
                     showMessage('Payment successful! Your subscription is now active.', 'success');
-                } else if (canceledParam === 'true') {
+                } else if (subscriptionCanceled) {
                     showMessage('Payment was canceled. Your subscription was not activated.', 'error');
-                } else if (subscriptionParam === 'required') {
+                } else if (subscriptionRequired) {
                     showMessage('Subscription required to access FPL Elite Insights.', 'error');
                 }
                 
@@ -163,6 +147,9 @@
                 // Setup subscribe button
                 document.getElementById('subscribe-button').addEventListener('click', async () => {
                     try {
+                        document.getElementById('subscribe-button').textContent = 'Processing...';
+                        document.getElementById('subscribe-button').disabled = true;
+                        
                         // Create checkout session
                         const response = await fetch('/api/subscriptions/create-checkout', {
                             method: 'POST',
@@ -182,6 +169,8 @@
                     } catch (error) {
                         console.error('Error creating checkout session:', error);
                         showMessage('Error creating checkout session. Please try again.', 'error');
+                        document.getElementById('subscribe-button').textContent = 'Subscribe - £4.99/month';
+                        document.getElementById('subscribe-button').disabled = false;
                     }
                 });
             } catch (error) {
@@ -211,6 +200,82 @@
                 errorMessage.style.display = 'none';
             }, 5000);
         }
+        
+        // Handle subscription state messages and UI updates
+        function handleSubscriptionState() {
+            if (subscriptionSuccess) {
+                // Show success message
+                const successAlert = document.createElement('div');
+                successAlert.className = 'alert-success';
+                successAlert.innerHTML = '<strong>Success!</strong> Your subscription is now active. Enjoy premium FPL Elite Insights!';
+                document.querySelector('.container').prepend(successAlert);
+                
+                // Also refresh user data to reflect new subscription state
+                refreshUserData();
+            } else if (subscriptionCanceled) {
+                // Show canceled message
+                const canceledAlert = document.createElement('div');
+                canceledAlert.className = 'alert-warning';
+                canceledAlert.innerHTML = '<strong>Canceled.</strong> Your subscription checkout was canceled. No charges were made.';
+                document.querySelector('.container').prepend(canceledAlert);
+            } else if (subscriptionRequired) {
+                // Show subscription required message
+                const requiredAlert = document.createElement('div');
+                requiredAlert.className = 'alert-info';
+                requiredAlert.innerHTML = '<strong>Subscription Required.</strong> Please subscribe to access premium features.';
+                document.querySelector('.container').prepend(requiredAlert);
+            }
+            
+            // Clean up URL parameters
+            if (subscriptionSuccess || subscriptionCanceled || subscriptionRequired) {
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        }
+        
+        // Add this function to the script to refresh user data
+        function refreshUserData() {
+            fetch('/api/user/me' + (subscriptionSuccess ? '?success=true' : ''))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Not authenticated');
+                    }
+                    return response.json();
+                })
+                .then(userData => {
+                    // Update UI with user data
+                    document.getElementById('user-email').textContent = userData.user?.email || 'User';
+                    
+                    // Check subscription status
+                    const isSubscribed = userData.isSubscribed;
+                    
+                    if (isSubscribed) {
+                        document.getElementById('subscription-active').style.display = 'block';
+                        document.getElementById('subscription-inactive').style.display = 'none';
+                        
+                        // Format and display subscription end date
+                        const endDate = new Date(userData.subscription?.current_period_end || (Date.now() + 30*24*60*60*1000));
+                        const formattedDate = endDate.toLocaleDateString('en-GB', { 
+                            day: 'numeric', 
+                            month: 'long', 
+                            year: 'numeric' 
+                        });
+                        document.getElementById('subscription-end-date').textContent = formattedDate;
+                    } else {
+                        document.getElementById('subscription-active').style.display = 'none';
+                        document.getElementById('subscription-inactive').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching user data:', error);
+                });
+        }
+        
+        // Add this line to the document ready function
+        document.addEventListener('DOMContentLoaded', () => {
+            handleSubscriptionState();
+            // Rest of the existing code...
+        });
     </script>
 </body>
 </html> 
